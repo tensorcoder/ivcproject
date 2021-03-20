@@ -1,0 +1,17 @@
+test/CATS/
+test/DOTS/
+train/CATS/
+train/DOGS/
+validation/CATS/
+validation/DOGS/
+catdog/
+catdog/CATS/
+catdog/DOGS/
+ResNet50_model/saved_model.pb
+ResNet50_model/variables/variables.data-00000-of-00001
+ResNet50_model/variables/variables.index
+ResNet18_model_AB/
+ResNet18_model_AC/
+tensorboard_logs/
+
+data/
