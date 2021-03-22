@@ -15,3 +15,10 @@ ResNet18_model_AC/
 tensorboard_logs/
 
 data/
+ResNet18_model_BC/variables/variables.index
+ResNet18_model_BC/variables/variables.data-00000-of-00001
+ResNet18_model_BC/saved_model.pb
+ResNet18_BC_results_on_A.pkl
+ResNet18_AC_results_on_B.pkl
+ResNet18_AB_results_on_C.pkl
+SVM_AB_model.sav

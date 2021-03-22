@@ -32,12 +32,47 @@ batch_size = 32
 input_height = 224
 input_width = 224
 
-new_model = tf.keras.models.load_model('ResNet18_model_AB')
+new_model = tf.keras.models.load_model('ResNet18_model_BC')
 new_model.summary()
 
+
+def training_data(test_path):
+    data_train=[]
+    target_train=[]
+    data_paths=[test_path] 
+    for data_path in data_paths:
+        categories=os.listdir(data_path)[0:2]
+        labels=[i for i in range(len(categories))]
+        label_dict=dict(zip(categories,labels)) #empty dictionary
+        # print(label_dict)
+        # print(categories)
+        # print(labels)
+        
+        img_size=224
+        for category in categories:
+            path = os.path.join(data_path,category)
+            for img in tqdm(os.listdir(path)):
+                # try:
+                    img_array = cv2.imread(os.path.join(path,img))
+                    dim = (img_size, img_size)
+                    img = cv2.resize(img_array, dim, interpolation = cv2.INTER_AREA)
+                    new_img = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2RGB)          
+                    new_img = new_img.astype('float32')
+                    new_img = new_img/255.0
+
+                    data_train.append(new_img)
+                    target_train.append(label_dict[category])
+
+
+    return np.array(data_train), np.array(target_train)
+
+# test_images, test_labels=training_data()
+
+
+
 data = []
-testing_folder = 'C'
-for perturb_type in os.listdir(testing_folder)[2:10]:
+testing_folder = 'data/A'
+for perturb_type in os.listdir(testing_folder)[2:11]:
     # print(perturb_type)
     perturb_type_path = os.path.join(testing_folder, perturb_type)
     for perturb_level in os.listdir(perturb_type_path):
@@ -45,22 +80,19 @@ for perturb_type in os.listdir(testing_folder)[2:10]:
         test_path = os.path.join(perturb_type_path, perturb_level)
         print(test_path)
         
-        
-        test_ds = tf.keras.preprocessing.image_dataset_from_directory(
-            test_path,
-            label_mode ='binary',
-            validation_split=None,
-            subset=None,
-            seed=123,
-            image_size=(input_height, input_width),
-            batch_size=batch_size)
+        test_images, test_labels=training_data(test_path)
+        # Evaluate the restored model
+        loss, acc = new_model.evaluate(test_images, test_labels, verbose=1)
+        print('Restored model, accuracy: {:5.2f}%'.format(100 * acc))
 
-        score = new_model.evaluate(test_ds)
-        print("Test loss:", score[0])
-        print("Test accuracy:", score[1])
-        data.append([test_path, score[1]])
+        # print(new_model.predict(test_images).shape)
 
-print(data)
+        # print("Test loss:", score[0])
+        # print("Test accuracy:", score[1])
+        data.append([test_path, acc])
 
-with open('testing_results.pkl', 'wb') as f:
+# print(data)
+
+with open('ResNet18_BC_results_on_A.pkl', 'wb') as f:
     pickle.dump(data, f)
+

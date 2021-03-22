@@ -58,7 +58,7 @@ def training_data(two_training_folders=['A', 'B']):
 
     return np.array(data_train), np.array(target_train)
 
-# data_train, target_train=training_data(two_training_folders=['A','B'])
+# data_train, target_train=training_data(two_training_folders=['C'])
 
 def training_split(data_train, target_train, test_size):
 
@@ -76,7 +76,11 @@ def training_split(data_train, target_train, test_size):
     # y_val = le.transform(y_val) 
     return X_train, X_val, y_train, y_val 
 
-# X_train, X_val, y_train, y_val = training_split(data_train, target_train)
+# X_train, X_val, y_train, y_val = training_split(data_train, target_train, test_size=0)
+
+# print(X_train.shape)
+
+# exit(0)
 
 def res_net_18():
     ResNet18, preprocess_input = Classifiers.get('resnet18')

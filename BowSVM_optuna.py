@@ -21,8 +21,7 @@ from sklearn import preprocessing
 import optuna
 from tqdm import tqdm
 from keras.backend import clear_session
-
-
+import pickle
 
 
 def img_list(path):    
@@ -88,7 +87,7 @@ def train_validation(im_features, image_classes, test_size=0.25):
     im_features=stdslr.transform(im_features)
     X_train, X_val, y_train, y_val= train_test_split(im_features, image_classes, test_size=test_size)
 
-    return X_train, X_val, y_train, y_val
+    return X_train, X_val, y_train, y_val, stdslr
 
 # X_train, X_val, y_train, y_val=train_validation(im_features,image_classes)
 
@@ -166,6 +165,12 @@ def plot_cmatrix(clf, X_val, y_test):
 # clf, X_val, y_test=plot_cmatrix()
 
 
+def save_model_SVM(filename):
+    # save the model to disk
+    filename = 'finalized_model.sav'
+    pickle.dump(model, open(filename, 'wb'))
+
+
 def objective(trial):
     clear_session()
     
@@ -173,20 +178,25 @@ def objective(trial):
     image_paths, image_classes = get_data(two_training_folders=['A', 'B'])
     #extract features
     
-    # k = trial.suggest_discrete_uniform('k', 50, 250, 50)
-    print(k)
+    # k = trial.suggest_discrete_uniform('k', 500, 4000, 500)
+    k = 200
+    # print(k)
 
-    # iterations = trial.suggest_discrete_uniform('iterations', 1, 5, 1)
-    print(iterations)
-    im_features=get_features(image_paths, k=200, iterations=1)
+    # iterations = trial.suggest_discrete_uniform('iterations', 5, 20, 5)
+    # print(iterations)
+    iterations = 1
+    im_features=get_features(image_paths, k=k, iterations=iterations)
     
     #validation split
-    X_train, X_val, y_train, y_val=train_validation(im_features, image_classes, test_size=0.25)
+    X_train, X_val, y_train, y_val, stdslr = train_validation(im_features, image_classes, test_size=0.25)
 
 
-    kernel = trial.suggest_categorical('kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
-    regularization = trial.suggest_uniform('svm-regularization', 0.01, 10)
-    degree = trial.suggest_discrete_uniform('degree', 1, 5, 1)
+    # kernel = trial.suggest_categorical('kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
+    kernel = 'rbf'
+    # regularization = trial.suggest_uniform('svm-regularization', 1, 5)
+    regularization = 1.76955055
+    # degree = trial.suggest_discrete_uniform('degree', 3, 7, 1)
+    degree = 5.0
     clf = SVC(kernel=kernel, C=regularization, degree=degree)
 
     #svm model
@@ -198,6 +208,10 @@ def objective(trial):
     accuracy = accuracy_score(y_val, y_pred)
     print('Model accuracy is: ', accuracy)
     
+    #to save model 
+    pickledump = [clf, stdslr]
+    filename = 'SVM_AB_model.sav'
+    pickle.dump(pickledump, open(filename, 'wb'))
     
     return accuracy
 
@@ -221,7 +235,7 @@ def main():
 
 
     study = optuna.create_study(direction='maximize')
-    study.optimize(objective, n_trials=100, timeout=None)
+    study.optimize(objective, n_trials=1, timeout=None)
     print("Number of finished trials: {}".format(len(study.trials)))
 
     print("Best trial:")

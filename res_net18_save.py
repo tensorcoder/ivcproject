@@ -144,16 +144,16 @@ def objective(model_index):
     #     model_index = str(two_training_folders[0]+two_training_folders[1])
     #     print(model_index)
 
-    data_train, target_train = training_data(two_training_folders=['A', 'C'])
+    data_train, target_train = training_data(two_training_folders=['B', 'C'])
     
-    val_split = 0.27507103836085595
+    val_split = 0.22681432258421763
     
     X_train, X_val, y_train, y_val  = training_split(data_train, target_train, test_size=val_split)
     model = res_net_18()
 
-    lr = 1.9057811424398227e-05
+    lr = 2.2824397862053592e-05
     
-    epochs = 40
+    epochs = 50
     model.compile(optimizer = Adam(lr=lr), loss = 'binary_crossentropy', metrics = ['accuracy'])
     
     history = model.fit(X_train, y_train, epochs=epochs, verbose=True, batch_size=5, validation_data=(X_val, y_val))
@@ -218,7 +218,7 @@ def main():
         #hyper parameter optimizer optuna
     # study = optuna.create_study(direction='maximize')
     # study.optimize(objective, n_trials=25, timeout=None)
-    model_index = 'AC'
+    model_index = 'BC'
     objective(model_index)
     # print("Number of finished trials: {}".format(len(study.trials)))
 

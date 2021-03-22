@@ -50,11 +50,22 @@ Best trial:
     epochs: 50
 
 # SVM with BOW
-iterations=1
-k=200
+## iterations=1
+## k=200
+
 Kernel: rbf
 svm_regularization: 1.76955055
 degree: 5.0
 validation accuracy: 0.7475
 
+
+kernel: rbf
+svm_regularization 4.564...
+degree 4.0 
+accuracy 0.7225
+
+kernel : rbf
+reg: 2.62
+degree 1
+accuracy 0.7175
 
