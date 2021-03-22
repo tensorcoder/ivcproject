@@ -76,11 +76,11 @@ def get_features(image_paths, k=200, iterations=1):
     voc,variance=kmeans(descriptors_float,k, iterations) #1 = number of iterations can modify 
     im_features=np.zeros((len(image_paths),k),"float32")
     for i in range(len(image_paths)):
-        words,distance=vq(des_list[i][1],voc)
+        words,distance=vq(des_list[i][1], voc)
         for w in words:
             im_features[i][w]+=1
     
-    return im_features
+    return im_features, voc
 
 def train_validation(im_features, image_classes, test_size=0.25):
     stdslr=StandardScaler().fit(im_features)
@@ -185,7 +185,7 @@ def objective(trial):
     # iterations = trial.suggest_discrete_uniform('iterations', 5, 20, 5)
     # print(iterations)
     iterations = 1
-    im_features=get_features(image_paths, k=k, iterations=iterations)
+    im_features, voc =get_features(image_paths, k=k, iterations=iterations)
     
     #validation split
     X_train, X_val, y_train, y_val, stdslr = train_validation(im_features, image_classes, test_size=0.25)
@@ -209,7 +209,7 @@ def objective(trial):
     print('Model accuracy is: ', accuracy)
     
     #to save model 
-    pickledump = [clf, stdslr]
+    pickledump = [clf, stdslr, voc]
     filename = 'SVM_AB_model.sav'
     pickle.dump(pickledump, open(filename, 'wb'))
     

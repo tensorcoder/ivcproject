@@ -24,10 +24,8 @@ from keras.backend import clear_session
 import pickle
 
 
-
 def img_list(path):    
     return [os.path.join(path, f) for f in os.listdir(path)[0:2]]
-
 
 
 def get_data(test_set):
@@ -59,7 +57,7 @@ def draw_keypoints(vis, keypoints, color = (0, 255, 255)):
             x, y = kp.pt
             plt.imshow(cv2.circle(vis, (int(x), int(y)), 2, color))
 
-def get_features(image_paths, k=200, iterations=1, stdslr='stdslr'):
+def get_features(image_paths, k=200, iterations=1, stdslr='stdslr', voc='voc'):
     #orb features
     des_list=[]
     orb=cv2.ORB_create()
@@ -74,7 +72,7 @@ def get_features(image_paths, k=200, iterations=1, stdslr='stdslr'):
     descriptors_float=descriptors.astype(float)
     #bow 
     # print(descriptors_float)
-    voc,variance=kmeans(descriptors_float,k, iterations) #1 = number of iterations can modify 
+    # voc,variance=kmeans(descriptors_float,k, iterations) #1 = number of iterations can modify 
     im_features=np.zeros((len(image_paths),k),"float32")
     for i in range(len(image_paths)):
         words,distance=vq(des_list[i][1],voc)
@@ -119,11 +117,13 @@ def main():
     thing1 = pickle.load(open(filename, 'rb'))
     clf = thing1[0]
     stdslr = thing1[1]
+    voc = thing1[2]
     test_set_path = 'data/C/gaussian_pixel_noise/0'
     image_paths, image_classes = get_data(test_set_path)
+
     # print(image_paths)
     # print(image_paths.)
-    X_test = get_features(image_paths, k=200, iterations=1, stdslr=stdslr)
+    X_test = get_features(image_paths, k=200, iterations=1, stdslr=stdslr, voc=voc)
     result = score_SVM_model(clf, X_test, image_classes)
 
 main()
