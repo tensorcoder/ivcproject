@@ -52,7 +52,6 @@ def image_contrast_decrease(img, intensity):
     return np.array(decreased, dtype='int')
 
 
-
 def image_brightness_increase(img, intensity):
     ones = np.ones((224,224,3))
     brightness_increase = ones*intensity
@@ -61,7 +60,6 @@ def image_brightness_increase(img, intensity):
     if np.max(increased)>255:
         increased = np.clip(increased, 0, 255)
     return np.array(increased, dtype='int')
-
 
 
 def image_brightness_decrease(img, intensity):

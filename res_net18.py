@@ -49,12 +49,12 @@ def training_data(two_training_folders=['A', 'B']):
             path = os.path.join(data_path,category)
             for img in tqdm(os.listdir(path)):
                 # try:
-                    img_array = cv2.imread(os.path.join(path,img))
-                    dim = (img_size, img_size)
-                    img = cv2.resize(img_array, dim, interpolation = cv2.INTER_AREA)
-                    new_img = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2RGB)          
-                    data_train.append(new_img)
-                    target_train.append(label_dict[category])
+                img_array = cv2.imread(os.path.join(path,img))
+                dim = (img_size, img_size)
+                img = cv2.resize(img_array, dim, interpolation = cv2.INTER_AREA)
+                new_img = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2RGB)          
+                data_train.append(new_img)
+                target_train.append(label_dict[category])
 
     return np.array(data_train), np.array(target_train)
 
@@ -91,7 +91,7 @@ def res_net_18():
     output = keras.layers.Flatten()(output)
     
     for layer in res_net_18_model.layers:
-        layer.trainable = True
+        layer.trainable = False
 
     model = Sequential()
 

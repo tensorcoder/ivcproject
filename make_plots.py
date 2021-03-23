@@ -118,5 +118,5 @@ def make_nice_plot(perturbation, save, standard, tight):
 perturbations = ['gaussian_blurring', 'gaussian_pixel_noise', 'hsv_hue_noise_increase', 'hsv_sat_noise_increase', 'image_brightness_decrease', 'image_brightness_increase', 'image_contrast_decrease', 'image_contrast_increase', 'occlusion']
 for perturbation in perturbations:
 
-    make_nice_plot(perturbation, save=True, standard=True, tight=False)
+    make_nice_plot(perturbation, save=False, standard=True, tight=False)
 

@@ -2,7 +2,8 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import glob 
-
+import matplotlib as mpl
+mpl.style.use('bmh')
 
 
 def load_dataset(path):
@@ -28,11 +29,11 @@ def plot_many(images, title, title_values):
 
     fig = plt.figure(figsize=(20,8))
     for i in range(cols*rows):
-        fig.add_subplot(rows, cols, i+1)
+        fig.add_subplot(rows, cols, i+1, )
         plt.imshow(np.squeeze(images[i]))
         plt.axis(False)
-        plt.title(title+'='+str(title_values[i]))
-            
+        plt.title(title+' '+str(title_values[i]), fontsize=20)
+    plt.tight_layout()   
     plt.show()
 
 
