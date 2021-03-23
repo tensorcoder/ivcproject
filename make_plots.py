@@ -5,11 +5,12 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-"""['Solarize_Light2', '_classic_test_patch', 'bmh', 'classic', 'dark_background', 'fast', 'fivethirtyeight', 'ggplot', 'grayscale', 'seaborn', 'seaborn-bright', 'seaborn-colorblind', 
+"""
+['Solarize_Light2', '_classic_test_patch', 'bmh', 'classic', 'dark_background', 'fast', 'fivethirtyeight', 'ggplot', 'grayscale', 'seaborn', 'seaborn-bright', 'seaborn-colorblind', 
 'seaborn-dark', 'seaborn-dark-palette', 'seaborn-darkgrid', 'seaborn-deep', 'seaborn-muted',
  'seaborn-notebook', 'seaborn-paper', 'seaborn-pastel', 'seaborn-poster', 'seaborn-talk', 'seaborn-ticks', 'seaborn-white', 'seaborn-whitegrid', 'tableau-colorblind10']
 """
-mpl.style.use('ggplot')
+mpl.style.use('bmh')
 mpl.rcParams["savefig.format"] = 'svg'
 
 def get_scatterplot_data(perturbation, data):
@@ -75,7 +76,7 @@ def plot_multiscatter(perturbation, x, y_res, std_res, y_svm, std_svm, x_label, 
         plt.tight_layout()
 
     if save:
-        plt.savefig(f"result_plots"/{perturbation}, dpi=250)
+        plt.savefig(f"result_plots/{perturbation}", dpi=250)
     else:
         plt.show()
 
@@ -117,5 +118,5 @@ def make_nice_plot(perturbation, save, standard, tight):
 perturbations = ['gaussian_blurring', 'gaussian_pixel_noise', 'hsv_hue_noise_increase', 'hsv_sat_noise_increase', 'image_brightness_decrease', 'image_brightness_increase', 'image_contrast_decrease', 'image_contrast_increase', 'occlusion']
 for perturbation in perturbations:
 
-    make_nice_plot(perturbation, save=False, standard=True, tight=False)
+    make_nice_plot(perturbation, save=True, standard=True, tight=False)
 
