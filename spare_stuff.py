@@ -1,4 +1,4 @@
-############ old code ########## 
+############ old code for perturbations -- fast but not what we want ########## 
     # hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
     # hsv_norm = normaliseImg(hsv)
     # h,s,v = cv2.split(hsv_norm)

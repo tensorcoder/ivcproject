@@ -66,16 +66,27 @@ def get_features(image_paths, k=200, iterations=1, stdslr='stdslr', voc='voc'):
         kp=orb.detect(im,None)
         keypoints,descriptor= orb.compute(im, kp)
         des_list.append((image_pat,descriptor))
-    descriptors=des_list[0][1]
-    for image_path,descriptor in des_list[1:]:
-        descriptors=np.vstack((descriptors,descriptor))
-    descriptors_float=descriptors.astype(float)
-    #bow 
+    # descriptors=des_list[0][1]
+    # for image_path,descriptor in des_list[0:]: #changed from [1:]
+    #     descriptors=np.vstack((descriptors,descriptor))
+    # descriptors_float=descriptors.astype(float)
+
     # print(descriptors_float)
-    # voc,variance=kmeans(descriptors_float,k, iterations) #1 = number of iterations can modify 
+    
     im_features=np.zeros((len(image_paths),k),"float32")
     for i in range(len(image_paths)):
-        words,distance=vq(des_list[i][1],voc)
+        try:
+            words,distance=vq(des_list[i][1],voc)
+        except:
+            try:
+                print('second try catch')
+                print(image_paths[i])
+                words, distance = vq(des_list[i][1].astype(float), voc)
+            except:
+                print('continuing')
+                continue
+        finally:
+            pass
         for w in words:
             im_features[i][w]+=1
     
@@ -83,28 +94,6 @@ def get_features(image_paths, k=200, iterations=1, stdslr='stdslr', voc='voc'):
     
     return im_features
 
-# def test_set(image_paths_test):
-#     k=200
-#     # voc,variance=kmeans(descriptors_float,k,1)
-#     orb=cv2.ORB_create()
-#     des_list_test=[]
-#     for image_pat in image_paths_test:
-#         image=cv2.imread(image_pat)
-#         kp=orb.detect(image,None)
-#         keypoints_test,descriptor_test= orb.compute(image, kp) 
-#         des_list_test.append((image_pat,descriptor_test))
-#     descriptors=des_list[0][1]
-
-#     for image_path
-#     test_features=np.zeros((len(image_paths_test),k),"float32")
-#     for i in range(len(image_paths_test)):
-#         words,distance=vq(des_list_test[i][1],voc)
-#         for w in words:
-#             test_features[i][w]+=1
-#     stdslr=StandardScaler().fit(test_features)
-#     test_features=stdslr.transform(test_features)
-    
-#     return test_features
 
 def score_SVM_model(clf, X_test, y_test):
 # load the model from disk
@@ -112,183 +101,51 @@ def score_SVM_model(clf, X_test, y_test):
     print(result)
     return result
 
-def main():
-    filename = 'SVM_AB_model.sav'
-    thing1 = pickle.load(open(filename, 'rb'))
-    clf = thing1[0]
-    stdslr = thing1[1]
-    voc = thing1[2]
-    test_set_path = 'data/C/gaussian_pixel_noise/0'
-    image_paths, image_classes = get_data(test_set_path)
+def choose_test_folder(kfld):
+    testing_folders = ['A', 'B', 'C']
+    for folder in testing_folders:
+        if folder not in kfld:
+            return folder
 
-    # print(image_paths)
-    # print(image_paths.)
-    X_test = get_features(image_paths, k=200, iterations=1, stdslr=stdslr, voc=voc)
-    result = score_SVM_model(clf, X_test, image_classes)
+
+def main():
+    for kfld in ['AB', 'AC', 'BC']:
+        filename = f"SVM_{kfld}_model.sav"
+        thing1 = pickle.load(open(filename, 'rb'))
+        clf = thing1[0]
+        stdslr = thing1[1]
+        voc = thing1[2]
+        data = []
+        testing_folder_name = choose_test_folder(kfld)
+        testing_folder = f'data/{testing_folder_name}'
+        for perturb_type in os.listdir(testing_folder)[2:11]:
+            # print(perturb_type)
+            perturb_type_path = os.path.join(testing_folder, perturb_type)
+            for perturb_level in os.listdir(perturb_type_path):
+                # print(perturb_level)
+                test_path = os.path.join(perturb_type_path, perturb_level)
+
+                # #uncomment line below to manually test a single folder
+                # test_path = "data/C/gaussian_pixel_noise/18"
+
+                print(test_path)
+                image_paths, image_classes = get_data(test_path)
+                # Evaluate the restored model
+                X_test = get_features(image_paths, k=200, iterations=1, stdslr=stdslr, voc=voc)
+                result = score_SVM_model(clf, X_test, image_classes)
+                # print(new_model.predict(test_images).shape)
+
+                # print("Test loss:", score[0])
+                # print("Test accuracy:", score[1])
+                data.append([test_path, result])
+
+                # exit(1)
+        with open(f"SVM_{kfld}_results_on_{testing_folder_name}.pkl", 'wb') as f:
+            pickle.dump(data, f)
+   
+    
 
 main()
 
 
 
-
-# def predict_accuracy():
-#     # test_features=stdslr.transform(test_features)
-#     y_pred = clf.predict(X_val)
-#     # calculate accuracy
-#     accuracy = accuracy_score(y_val, y_pred)
-#     print('Model accuracy is: ', accuracy)
-#     return y_pred
-
-
-
-# def get_features(image_paths, k=200, iterations=1):
-#     #orb features
-#     des_list=[]
-#     orb=cv2.ORB_create()
-#     for image_pat in image_paths:
-#         im=cv2.imread(image_pat)
-#         kp=orb.detect(im,None)
-#         keypoints,descriptor= orb.compute(im, kp)
-#         des_list.append((image_pat,descriptor))
-#     descriptors=des_list[0][1]
-#     for image_path,descriptor in des_list[1:]:
-#         descriptors=np.vstack((descriptors,descriptor))
-#     descriptors_float=descriptors.astype(float)
-#     #bow 
-#     # print(descriptors_float)
-#     voc,variance=kmeans(descriptors_float,k, iterations) #1 = number of iterations can modify 
-#     im_features=np.zeros((len(image_paths),k),"float32")
-#     for i in range(len(image_paths)):
-#         words,distance=vq(des_list[i][1],voc)
-#         for w in words:
-#             im_features[i][w]+=1
-    
-#     return im_features
-
-# def train_validation(im_features, image_classes, test_size=0.25):
-#     stdslr=StandardScaler().fit(im_features)
-#     im_features=stdslr.transform(im_features)
-#     X_train, X_val, y_train, y_val= train_test_split(im_features, image_classes, test_size=test_size)
-
-#     return X_train, X_val, y_train, y_val
-
-# X_train, X_val, y_train, y_val=train_validation(im_features,image_classes)
-
-
-
-
-# def svm_model(X_train,y_train):
-#     clf=SVC(kernel='linear',probability=True)
-#     clf.fit(X_train,np.array(y_train))
-#     return clf
-
-# clf=svm_model(X_train,y_train)
-
-
-
-
-
-
-# def roc_auc(clf, X_val,y_val, y_proba):
-
-#     # predict probabilities for X_test using predict_proba
-#     probabilities = clf.predict_proba(X_val)
-
-#     # select the probabilities for label 1.0
-#     y_proba = probabilities[:, 1]
-
-#     # calculate false positive rate and true positive rate at different thresholds
-#     false_positive_rate, true_positive_rate, thresholds = roc_curve(y_val, y_proba, pos_label=1)
-
-#     # calculate AUC
-#     roc_auc = auc(false_positive_rate, true_positive_rate)
-
-#     plt.title('Receiver Operating Characteristic')
-#     # plot the false positive rate on the x axis and the true positive rate on the y axis
-#     roc_plot = plt.plot(false_positive_rate,
-#                         true_positive_rate,
-#                         label='AUC = {:0.2f}'.format(roc_auc))
-
-#     plt.legend(loc=0)
-#     plt.plot([0,1], [0,1], ls='--')
-#     plt.ylabel('True Positive Rate')
-#     plt.xlabel('False Positive Rate')
-#     return y_proba
-
-# # roc_auc(clf, X_val,y_val, y_proba)
-
-
-# def plot_cmatrix(clf, X_val, y_test):
-#     plot_confusion_matrix(clf, X_val, y_test)  
-#     plt.show()
-
-# # clf, X_val, y_test=plot_cmatrix()
-
-
-# def objective(trial):
-#     clear_session()
-    
-#        #image paths
-#     image_paths, image_classes = get_data(two_training_folders=['A', 'B'])
-#     #extract features
-    
-#     k = trial.suggest_discrete_uniform('k', 500, 4000, 500)
-#     # print(k)
-
-#     iterations = trial.suggest_discrete_uniform('iterations', 5, 20, 5)
-#     # print(iterations)
-#     im_features=get_features(image_paths, k=int(k), iterations=int(iterations))
-    
-#     #validation split
-#     X_train, X_val, y_train, y_val=train_validation(im_features, image_classes, test_size=0.25)
-
-
-#     # kernel = trial.suggest_categorical('kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
-#     kernel = 'rbf'
-#     regularization = trial.suggest_uniform('svm-regularization', 1, 5)
-#     degree = trial.suggest_discrete_uniform('degree', 3, 7, 1)
-#     clf = SVC(kernel=kernel, C=regularization, degree=degree)
-
-#     #svm model
-#     # clf=SVC(kernel='linear', probability=True)
-#     clf.fit(X_train,np.array(y_train))
-#     #run predict
-#     y_pred = clf.predict(X_val)
-#     # calculate accuracy
-#     accuracy = accuracy_score(y_val, y_pred)
-#     print('Model accuracy is: ', accuracy)
-    
-    
-#     return accuracy
-
-
-
-# def main():
-#     #image paths
-#     # image_paths, image_classes = get_data(two_training_folders=['A', 'B'])
-#     # #extract features
-    
-#     # im_features=get_features(image_paths)
-    
-#     # #validation split
-
-#     # #svm parameters
-#     # clf=svm_model(X_train,y_train)
-#     # y_pred=predict_accuracy()
-#     # #scoring
-#     # roc_auc(clf, X_val,y_val, y_proba)
-#     # clf, X_val, y_test=plot_cmatrix()
-
-
-#     study = optuna.create_study(direction='maximize')
-#     study.optimize(objective, n_trials=100, timeout=None)
-#     print("Number of finished trials: {}".format(len(study.trials)))
-
-#     print("Best trial:")
-#     trial = study.best_trial
-#     print("  Value: {}".format(trial.value))
-#     print("  Params: ")
-#     for key, value in trial.params.items():
-#         print("    {}: {}".format(key, value))
-
-# main()

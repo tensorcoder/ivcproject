@@ -22,3 +22,9 @@ ResNet18_BC_results_on_A.pkl
 ResNet18_AC_results_on_B.pkl
 ResNet18_AB_results_on_C.pkl
 SVM_AB_model.sav
+SVM_AC_model.sav
+SVM_AB_results_on_C.pkl
+SVM_AC_results_on_B.pkl
+SVM_BC_model.sav
+SVM_BC_results_on_A.pkl
+

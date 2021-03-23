@@ -126,9 +126,6 @@ def predict_accuracy():
     return y_pred
 
 
-
-
-
 def roc_auc(clf, X_val,y_val, y_proba):
 
     # predict probabilities for X_test using predict_proba
@@ -175,7 +172,7 @@ def objective(trial):
     clear_session()
     
        #image paths
-    image_paths, image_classes = get_data(two_training_folders=['A', 'B'])
+    image_paths, image_classes = get_data(two_training_folders=['B', 'C'])
     #extract features
     
     # k = trial.suggest_discrete_uniform('k', 500, 4000, 500)
@@ -210,7 +207,7 @@ def objective(trial):
     
     #to save model 
     pickledump = [clf, stdslr, voc]
-    filename = 'SVM_AB_model.sav'
+    filename = 'SVM_BC_model.sav'
     pickle.dump(pickledump, open(filename, 'wb'))
     
     return accuracy

@@ -107,46 +107,12 @@ def res_net_18():
     model.summary() 
     return model
 
-# model=res_net_18()
 
-
-# def compile_fit_model(model, model_index, X_train, y_train, X_val, y_val, trial):
-    
-#     clear_session()
-#     # timestr = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-#     # name = 'res_net_50-'+timestr #
-
-#     # checkpoint_path = "checkpoints/"+name+"/cp-{epoch:04d}.ckpt"
-#     # checkpoint_dir = os.path.dirname(checkpoint_path)
-#     # os.system('mkdir {}'.format(checkpoint_dir))
-
-#     # tensorboard_callback = TensorBoard(
-#     # log_dir='tensorboard_logs/'+name,
-#     # histogram_freq=1)
-#     # callbacks=[tensorboard_callback]
-#     lr = trial.suggest_loguniform('lr', 1e-5, 1000)
-#     val_split = trial.suggest_float('val_split', 0.1, 0.3)
-#     model.compile(optimizer = RMSprop(lr=lr), loss = 'binary_crossentropy', metrics = ['accuracy'])
-#     history = model.fit(X_train,y_train, epochs=40, verbose=1, batch_size=5, validation_split=val_split)
-#     accuracy = model.evaluate(X_val, y_val)
-#     # model.save(f"ResNet18_model_{model_index}")
-#     return history, score[1], score[0]
-
-# history=compile_fit_model(model)
 
 
 def objective(trial):
     clear_session()
     
-    # folders = ['A','B','C']
-    # combs = combinations(folders, r=2)
-    # training_folders = list(combs)
-    
-    
-
-    # for two_training_folders in training_folders:
-    #     model_index = str(two_training_folders[0]+two_training_folders[1])
-    #     print(model_index)
 
     data_train, target_train = training_data(two_training_folders=['B', 'C'])
     

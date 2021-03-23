@@ -23,7 +23,7 @@ def normaliseImg(img):
 def plot_many(images, title, title_values):
     cols = 5
     rows = 2
-
+    
     fig = plt.figure(figsize=(20,8))
     for i in range(cols*rows):
         fig.add_subplot(rows, cols, i+1)
