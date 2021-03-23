@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import glob 
 
+
+
 def load_dataset(path):
     dataset = glob.glob(path+"/*.png")
     return dataset
@@ -23,7 +25,7 @@ def normaliseImg(img):
 def plot_many(images, title, title_values):
     cols = 5
     rows = 2
-    
+
     fig = plt.figure(figsize=(20,8))
     for i in range(cols*rows):
         fig.add_subplot(rows, cols, i+1)
@@ -38,8 +40,11 @@ def plot_scatter(x, y, x_label, y_label, title):
     
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.scatter(x, y)
+    plt.locator_params(axis="x", nbins=10)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(title)
 
     plt.show()
+
+

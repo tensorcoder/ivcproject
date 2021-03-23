@@ -17,14 +17,7 @@ def gaussian_pixel_noise(img, std):
     number = np.array(number)
     modified = img+number
     if np.max(modified)>255 or np.min(modified)<0:
-        print('hit if statement')
-        for index, row in enumerate(modified):
-            for undex, rgb in enumerate(row):
-                for i, color in enumerate(rgb):
-                    if color>255:
-                        modified[index][undex][i]=255
-                    if color<0:
-                        modified[index][undex][i]=0
+        modified = np.clip(modified, 0, 255)
                  
     return np.array(modified, dtype='int')
 
@@ -44,14 +37,7 @@ def image_contrast_increase(img, intensity):
     contrast_increase = ones*intensity
     increased = np.multiply(img,contrast_increase)
     if np.max(increased)>255:
-        print('hit if statement')
-        for index, row in enumerate(increased):
-            for undex, rgb in enumerate(row):
-                for i, color in enumerate(rgb):
-                    if color>255:
-                        increased[index][undex][i]=255
-                    # elif color<0:     # instructions do not say to include this for this part
-                    #     increased[index][undex][i]=0
+        increased = np.clip(increased, 0, 255)
     
     return np.array(increased, dtype='int')
 
@@ -61,14 +47,7 @@ def image_contrast_decrease(img, intensity):
     contrast_decrease = ones*intensity
     decreased = np.multiply(img,contrast_decrease)
     if np.min(decreased)<0:
-        print('hit if statement')
-        for index, row in enumerate(decreased):
-            for undex, rgb in enumerate(row):
-                for i, color in enumerate(rgb):
-                    if color<0:
-                        decreased[index][undex][i]=0
-                    # elif color<0:     # instructions do not say to include this for this part
-                    #     increased[index][undex][i]=0
+        decreased = np.clip(decreased, 0, 255)
     
     return np.array(decreased, dtype='int')
 
@@ -78,39 +57,20 @@ def image_brightness_increase(img, intensity):
     ones = np.ones((224,224,3))
     brightness_increase = ones*intensity
     increased = img+brightness_increase
+    
     if np.max(increased)>255:
-        print('hit if statement')
-        for index, row in enumerate(increased):
-            for undex, rgb in enumerate(row):
-                for i, color in enumerate(rgb):
-                    if color>255:
-                        increased[index][undex][i]=255
-                    # elif color<0:     # instructions do not say to include this for this part
-                    #     increased[index][undex][i]=0
+        increased = np.clip(increased, 0, 255)
     return np.array(increased, dtype='int')
-
 
 
 
 def image_brightness_decrease(img, intensity):
     img = np.array(img)
-    # print(img.shape)
     ones = np.ones((224,224,3))
     brightness_decrease = ones*intensity
-    # print(brightness_decrease)
-    # print(brightness_decrease.shape)
     decreased = img-brightness_decrease
-    # decreased = cv2.subtract(img,brightness_decrease)
     if np.min(decreased)<0:
-        print('hit if statement')
-        for index, row in enumerate(decreased):
-            for undex, rgb in enumerate(row):
-                for i, color in enumerate(rgb):
-                    if color<0:
-                        decreased[index][undex][i]=0
-                    # elif color<0:     # instructions do not say to include this for this part
-                    #     increased[index][undex][i]=0
-
+        decreased = np.clip(decreased, 0, 255)
     return np.array(decreased, dtype='int')
 
 
@@ -127,20 +87,15 @@ def hsv_hue_noise_increase(img, std):
     huenoise = h + randomnoise
 
     if np.max(huenoise)>179:
-        print('hit if statement')
         for index, row in enumerate(huenoise):
             for undex, value in enumerate(row):
                 if value>179:
                     huenoise[index][undex]=value-179
-                # elif value<0:     # instructions do not say to include this for this part
-                #     huenoise[index][undex]=0
 
     huenoise = huenoise.astype(np.uint8)
-    # huenoise = np.array(huenoise, dtype='int')
     merged = cv2.merge([huenoise, s, v])
     converted_back = cv2.cvtColor(merged, cv2.COLOR_HSV2RGB)
     
-
     return converted_back
 
 def hsv_sat_noise_increase(img, std):
@@ -152,25 +107,14 @@ def hsv_sat_noise_increase(img, std):
 
     randomnoise = np.array(randomnoise)
     s = np.array(s)
-    print(f'max s = {np.max(s)}, min s = {np.min(s)}')
 
     satnoise = s + randomnoise
     
     if np.max(satnoise)>255 or np.min(satnoise)<0:
-        print('hit if statement')
-        for index, row in enumerate(satnoise):
-            for undex, val in enumerate(row):
-                # for i, color in enumerate(rgb):
-                if val>255:
-                    satnoise[index][undex]=255
-                if val<0:
-                        satnoise[index][undex]=0
+        satnoise = np.clip(satnoise, 0, 255)
 
     uintsatnoise = satnoise.astype(np.uint8)
-    # uintsatnoise = np.array(satnoise, dtype='int')
-
     merged = cv2.merge([h, uintsatnoise, v])
-
     converted_back = cv2.cvtColor(merged, cv2.COLOR_HSV2RGB)
     
     return converted_back
@@ -179,11 +123,8 @@ def hsv_sat_noise_increase(img, std):
 def occlusion(img, edge_length):
     square = np.zeros((edge_length, edge_length, 3))
     random_x = np.random.randint(0, img.shape[0]-edge_length)
-    # print(random_x)
     random_y = np.random.randint(0, img.shape[1]-edge_length)
-    # print(random_y)
     img2 = img.copy()
-    # print(square.shape[0], square.shape[1])
     img2[random_x:(random_x+square.shape[0]), random_y:(random_y+square.shape[1])] = square
     
     return img2

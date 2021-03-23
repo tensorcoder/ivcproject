@@ -5,6 +5,10 @@ from shutil import copy as cp
 
 
 def split_set(folder_path, source_path):
+
+    """takes destination path and source path and sorts images of cats
+    and dogs into 3 sets (A,B,C) each containing an even distribution of subclasses"""
+    
     if not os.path.exists(folder_path+"/A"):
         train_path = os.mkdir(folder_path+"/A")
         train_path = folder_path+"/A"
@@ -22,7 +26,6 @@ def split_set(folder_path, source_path):
         validation_path = folder_path+"/C"
     else:
         validation_path = folder_path+"/C"
-    
     
     for directory in os.listdir(source_path):
         directory_path = os.path.join(source_path, directory)
