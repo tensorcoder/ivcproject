@@ -69,3 +69,38 @@ reg: 2.62
 degree 1
 accuracy 0.7175
 
+surf SVM 
+AB
+Best trial:
+  Value: 0.7455470737913485
+  Params:
+    k: 500.0  : 500 --> 10,000 , step=500
+    iterations: 15.0m  : 5-->20
+    surf_number: 9000.0  : 1000 - 10,000 : 1000
+    kernel: sigmoid: linear', 'rbf', 'sigmoid'
+    svm-regularization: 1.4279115308137222:  1, 5
+  
+BC
+  Number of finished trials: 50
+Best trial:
+  Value: 0.7564102564102564
+  Params:
+    k: 200.0    ('k', 100, 1000, 100)
+    iterations: 15.0    'iterations', 5, 20, 5
+    surf_number: 5000.0  1000, 10000, 1000
+    kernel: rbf
+    svm-regularization: 4.8790100294612015
+
+BC
+Number of finished trials: 50
+Best trial:
+  Value: 0.7390180878552972
+  Params:
+    k: 300.0
+    iterations: 14.0
+    surf_number: 6500.0
+    kernel: sigmoid
+    svm-regularization: 4.801728275040972
+
+
+

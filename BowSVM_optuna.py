@@ -20,7 +20,7 @@ from sklearn.metrics import plot_confusion_matrix
 from sklearn import preprocessing
 import optuna
 from tqdm import tqdm
-from keras.backend import clear_session
+# from keras.backend import clear_session
 import pickle
 
 
@@ -58,29 +58,61 @@ def draw_keypoints(vis, keypoints, color = (0, 255, 255)):
             plt.imshow(cv2.circle(vis, (int(x), int(y)), 2, color))
 
 
-def get_features(image_paths, k=200, iterations=1):
+def get_features(image_paths, k=200, iterations=1, surf_number=5000):
     #orb features
     des_list=[]
-    orb=cv2.ORB_create()
-    for image_pat in image_paths:
-        im=cv2.imread(image_pat)
-        kp=orb.detect(im,None)
-        keypoints,descriptor= orb.compute(im, kp)
-        des_list.append((image_pat,descriptor))
+    # orb=cv2.ORB_create()
+
+    #surf features
+    surf = cv2.xfeatures2d.SURF_create(surf_number)
+    
+    undexes_to_remove = []
+    for undex, image_pat in enumerate(image_paths):
+        im=cv2.imread(image_pat, -1)
+        
+        #orb
+        # kp=orb.detect(im,None)
+        # keypoints,descriptor= orb.compute(im, kp)
+        
+        #surf 
+
+        keypoints, descriptor = surf.detectAndCompute(im,None)
+        if descriptor is not None:
+            des_list.append((image_pat,descriptor))
+        else:
+            undexes_to_remove.append(undex)
     descriptors=des_list[0][1]
+    # print(descriptors)
+    # print(np.array(descriptors).shape)
+    # exit(1)
+
+
     for image_path,descriptor in des_list[1:]:
+        # print(index)
+        # print(image_path)
+        # print(des_list[0][0])
+        # print(des_list[1][0])
+        # exit(1)
+        # print(np.array(descriptor).shape)
+        # try:
         descriptors=np.vstack((descriptors,descriptor))
+        # except:
+
+            # continue
     descriptors_float=descriptors.astype(float)
     #bow 
     # print(descriptors_float)
+    
+    # print(len(des_list[0:]))
+    # exit(1)
     voc,variance=kmeans(descriptors_float,k, iterations) #1 = number of iterations can modify 
-    im_features=np.zeros((len(image_paths),k),"float32")
-    for i in range(len(image_paths)):
+    im_features=np.zeros((len(des_list[0:]),k),"float32")
+    for i in range(len(des_list[0:])):
         words,distance=vq(des_list[i][1], voc)
         for w in words:
             im_features[i][w]+=1
     
-    return im_features, voc
+    return im_features, voc, undexes_to_remove
 
 def train_validation(im_features, image_classes, test_size=0.25):
     stdslr=StandardScaler().fit(im_features)
@@ -101,20 +133,6 @@ def svm_model(X_train,y_train):
 
 # clf=svm_model(X_train,y_train)
 
-
-def test_set():
-
-    des_list_test=[]
-    for image_pat in image_paths_test:
-        image=cv2.imread(image_pat)
-        kp=orb.detect(image,None)
-        keypoints_test,descriptor_test= orb.compute(image, kp)
-        des_list_test.append((image_pat,descriptor_test))
-    test_features=np.zeros((len(image_paths_test),k),"float32")
-    for i in range(len(image_paths_test)):
-        words,distance=vq(des_list_test[i][1],voc)
-        for w in words:
-            test_features[i][w]+=1
 
 
 def predict_accuracy():
@@ -169,29 +187,37 @@ def save_model_SVM(filename):
 
 
 def objective(trial):
-    clear_session()
+    # clear_session()
     
        #image paths
     image_paths, image_classes = get_data(two_training_folders=['B', 'C'])
     #extract features
     
-    # k = trial.suggest_discrete_uniform('k', 500, 4000, 500)
-    k = 200
+    k = trial.suggest_discrete_uniform('k', 100, 500, 50)
+    k = int(k)
+    # k = 2
     # print(k)
 
-    # iterations = trial.suggest_discrete_uniform('iterations', 5, 20, 5)
+    iterations = trial.suggest_discrete_uniform('iterations', 12, 18, 2)
+    iterations = int(iterations)
+
+    surf_number = trial.suggest_discrete_uniform('surf_number', 4000, 7000, 500)
+    surf_number = int(surf_number)
     # print(iterations)
-    iterations = 1
-    im_features, voc =get_features(image_paths, k=k, iterations=iterations)
+    # iterations = 1
+    im_features, voc, undexes_to_remove =get_features(image_paths, k=k, iterations=iterations)
     
+    for i in reversed(undexes_to_remove):
+        del image_classes[i]
+
     #validation split
     X_train, X_val, y_train, y_val, stdslr = train_validation(im_features, image_classes, test_size=0.25)
 
 
-    # kernel = trial.suggest_categorical('kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
-    kernel = 'rbf'
-    # regularization = trial.suggest_uniform('svm-regularization', 1, 5)
-    regularization = 1.76955055
+    kernel = trial.suggest_categorical('kernel', ['rbf', 'sigmoid'])
+    # kernel = 'rbf'
+    regularization = trial.suggest_uniform('svm-regularization', 1, 5)
+    # regularization = 1.76955055
     # degree = trial.suggest_discrete_uniform('degree', 3, 7, 1)
     degree = 5.0
     clf = SVC(kernel=kernel, C=regularization, degree=degree)
@@ -206,9 +232,9 @@ def objective(trial):
     print('Model accuracy is: ', accuracy)
     
     #to save model 
-    pickledump = [clf, stdslr, voc]
-    filename = 'SVM_BC_model.sav'
-    pickle.dump(pickledump, open(filename, 'wb'))
+    # pickledump = [clf, stdslr, voc]
+    # filename = 'Surf_SVM_BC_model.sav'
+    # pickle.dump(pickledump, open(filename, 'wb'))
     
     return accuracy
 
@@ -232,7 +258,7 @@ def main():
 
 
     study = optuna.create_study(direction='maximize')
-    study.optimize(objective, n_trials=1, timeout=None)
+    study.optimize(objective, n_trials=50, timeout=None)
     print("Number of finished trials: {}".format(len(study.trials)))
 
     print("Best trial:")
