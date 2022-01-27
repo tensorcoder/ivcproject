@@ -63,6 +63,8 @@ def training_data(two_training_folders=['A', 'B']):
 def training_split(data_train, target_train, test_size):
 
     X_train, X_val, y_train, y_val = train_test_split(data_train, target_train, test_size=test_size, shuffle=True)
+    print(X_train[:2])
+    exit()
     X_train = X_train.astype('float32')
     X_val = X_val.astype('float32')
     X_train = X_train / 255.0

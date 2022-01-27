@@ -19,6 +19,7 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import plot_confusion_matrix
 from sklearn import preprocessing
 import optuna
+import pickle
 from tqdm import tqdm
 from keras.backend import clear_session
 
@@ -29,13 +30,13 @@ def img_list(path):
     return [os.path.join(path, f) for f in os.listdir(path)[0:2]]
 
 
-def get_data(two_training_folders=['A', 'B']):
+def get_data(two_training_folders=["train_catdog"]):
 
-    data_paths=[f"data/{two_training_folders[0]}", f"data/{two_training_folders[1]}"] 
+    data_paths=["train_catdog"]
     image_paths = []
     image_classes = []
     for data_path in data_paths:
-        categories=os.listdir(data_path)[0:2]
+        categories=os.listdir(data_path)
         labels=[i for i in range(len(categories))]
         label_dict=dict(zip(categories,labels)) #empty dictionary
         # print(label_dict)
@@ -102,20 +103,19 @@ def svm_model(X_train,y_train):
 
 # clf=svm_model(X_train,y_train)
 
+# def test_set():
 
-def test_set():
-
-    des_list_test=[]
-    for image_pat in image_paths_test:
-        image=cv2.imread(image_pat)
-        kp=orb.detect(image,None)
-        keypoints_test,descriptor_test= orb.compute(image, kp)
-        des_list_test.append((image_pat,descriptor_test))
-    test_features=np.zeros((len(image_paths_test),k),"float32")
-    for i in range(len(image_paths_test)):
-        words,distance=vq(des_list_test[i][1],voc)
-        for w in words:
-            test_features[i][w]+=1
+#     des_list_test=[]
+#     for image_pat in image_paths_test:
+#         image=cv2.imread(image_pat)
+#         kp=orb.detect(image,None)
+#         keypoints_test,descriptor_test= orb.compute(image, kp)
+#         des_list_test.append((image_pat,descriptor_test))
+#     test_features=np.zeros((len(image_paths_test),k),"float32")
+#     for i in range(len(image_paths_test)):
+#         words,distance=vq(des_list_test[i][1],voc)
+#         for w in words:
+#             test_features[i][w]+=1
 
 
 def predict_accuracy():
@@ -125,8 +125,6 @@ def predict_accuracy():
     accuracy = accuracy_score(y_val, y_pred)
     print('Model accuracy is: ', accuracy)
     return y_pred
-
-
 
 
 
@@ -166,27 +164,38 @@ def plot_cmatrix(clf, X_val, y_test):
 # clf, X_val, y_test=plot_cmatrix()
 
 
+def save_model_SVM(filename):
+    # save the model to disk
+    filename = 'finalized_model.sav'
+    pickle.dump(model, open(filename, 'wb'))
+
+
 def objective(trial):
     clear_session()
     
        #image paths
-    image_paths, image_classes = get_data(two_training_folders=['A', 'B'])
+    image_paths, image_classes = get_data("train_catdog")
     #extract features
     
-    # k = trial.suggest_discrete_uniform('k', 50, 250, 50)
-    print(k)
+    # k = trial.suggest_discrete_uniform('k', 500, 4000, 500)
+    k = 200
+    # print(k)
 
-    # iterations = trial.suggest_discrete_uniform('iterations', 1, 5, 1)
-    print(iterations)
-    im_features=get_features(image_paths, k=200, iterations=1)
+    # iterations = trial.suggest_discrete_uniform('iterations', 5, 20, 5)
+    # print(iterations)
+    iterations = 1
+    im_features=get_features(image_paths, k=int(k), iterations=int(iterations))
     
     #validation split
     X_train, X_val, y_train, y_val=train_validation(im_features, image_classes, test_size=0.25)
 
 
-    kernel = trial.suggest_categorical('kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
-    regularization = trial.suggest_uniform('svm-regularization', 0.01, 10)
-    degree = trial.suggest_discrete_uniform('degree', 1, 5, 1)
+    # kernel = trial.suggest_categorical('kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
+    kernel = 'rbf'
+    # regularization = trial.suggest_uniform('svm-regularization', 1, 5)
+    regularization = 3
+    # degree = trial.suggest_discrete_uniform('degree', 3, 7, 1)
+    degree = 5
     clf = SVC(kernel=kernel, C=regularization, degree=degree)
 
     #svm model
@@ -198,6 +207,9 @@ def objective(trial):
     accuracy = accuracy_score(y_val, y_pred)
     print('Model accuracy is: ', accuracy)
     
+    #to save model 
+    filename = 'SVM_AB_model.sav'
+    pickle.dump(clf, open(filename, 'wb'))
     
     return accuracy
 
@@ -221,7 +233,7 @@ def main():
 
 
     study = optuna.create_study(direction='maximize')
-    study.optimize(objective, n_trials=100, timeout=None)
+    study.optimize(objective, n_trials=1, timeout=None)
     print("Number of finished trials: {}".format(len(study.trials)))
 
     print("Best trial:")
